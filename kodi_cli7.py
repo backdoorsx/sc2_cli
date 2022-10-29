@@ -574,7 +574,7 @@ class Core:
 
             username, password = Core.get_hide()
             
-            video_player = 'cvlc'
+            video_player = 'vlc'
             webshare = WebshareAPI()
             login = webshare.login(username, password)
             if login == "OK":
