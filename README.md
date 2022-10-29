@@ -6,3 +6,4 @@
             print(' ██║  ██╗╚██████╔╝██████╔╝██║    ╚██████╗███████╗██║')
             print(' ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝     ╚═════╝╚══════╝╚═╝')
             print('  STREAM CINEMA 2')
+            print('  Support players [mpv, vlc, mplayer, cvlc]')
