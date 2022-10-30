@@ -6,7 +6,6 @@ import os
 try:
     import random
     import string
-    import hua
     import json
     import requests
     import hashlib
