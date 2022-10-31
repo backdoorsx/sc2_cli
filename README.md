@@ -7,7 +7,7 @@
 ██║  ██╗╚██████╔╝██████╔╝██║    ╚██████╗███████╗██║
 ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝     ╚═════╝╚══════╝╚═╝
   STREAM CINEMA 2
-  Support players [mpv, vlc, mplayer, cvlc]
+  Support players [mpv, vlc, mplayer, cvlc] (Windows only VLC)
   
   
    0) Settings
