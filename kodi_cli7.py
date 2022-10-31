@@ -14,7 +14,7 @@ try:
     from xml.etree import ElementTree
 except ModuleNotFoundError:
     print('\n [-] CHeck modules!\n')
-    input('Press any key to continue without requred modules.')
+    input('Press any key to continue without requred modules.\n Use: pip3 install requests hashlib passlib')
 
 TOKEN = "9ajdu4xyn1ig8nxsodr3"      # access token
 #TOKEN = "th2tdy0no8v1zoh1fs59"      # access token
@@ -37,7 +37,8 @@ class Sc2API:
             QUERY_URL_API = "https://plugin.sc2.zone/api/media/filter/search?sort=score&limit=20&type={}&order=desc&value={}&access_token={}".format(tag_type, search_name, TOKEN)
         else:
             QUERY_URL_API = "https://plugin.sc2.zone" + tag_type # NEXT/PREV PAGE, defaultne API vracia 100
-            
+
+        # Ex:
         #QUERY_URL_API = "https://plugin.sc2.zone/api/media/filter/search?sort=score&limit=20&type=%2A&order=desc&value={}&access_token={}".format(search_name, TOKEN)
         #QUERY_URL_API = "https://plugin.sc2.zone/api/media/filter/v2/search?order=desc&sort=score&type=*&value={}&access_token={}".format(search_name, TOKEN)
         #QUERY_URL_API = "https://plugin.sc2.zone/api/media/filter/search?order=desc&sort=score&type=*&value={}&access_token={}".format(search_name, TOKEN)
@@ -61,10 +62,6 @@ class Sc2API:
                     
         page = query_data["totalCount"]
         data = query_data["data"]
-
-        #print('---------------')
-        #print(query_data)
-        #print('---------------')
 
         for n in range(len(data)):
 
@@ -90,9 +87,10 @@ class Sc2API:
                             searched.append((n, i2[0]["title"], get_year, d["_id"]))    # cz
             except KeyError:
                 searched.append((n, 'NaN', get_year, d["_id"]))                         # nema nazov
-                print('')
-                print('[-] Shity in API. Check {}'.format(i2))
-                print('')
+                # nemazat iba komentovat, niekedy neexistuje jazyk alebo rok alebo nazov
+                #print('')
+                #print('[-] Shity in API. Check {}'.format(i2))
+                #print('')
                         
         return searched, next_page, prev_page
 
@@ -101,14 +99,10 @@ class Sc2API:
 
         QUERY_URL_API = "http://plugin.sc2.zone/api/media/{}/streams?access_token={}".format(idx, TOKEN)
         query_data = requests.get(QUERY_URL_API).json()
-    
-        #print(type(query_data))
-        #print(len(query_data))
-        #print(query_data)
 
         movie_data = []
         for data in query_data:
-            #print(data)
+
             try:
                 movie_data.append((data['ident'],data['size'],data['video'],data['audio']))
             except KeyError:
@@ -122,9 +116,6 @@ class Sc2API:
         QUERY_URL_API = "https://plugin.sc2.zone/api/media/filter/parent?value={}&sort=episode&access_token={}".format(idx, TOKEN)
         query_data = requests.get(QUERY_URL_API).json()
 
-        #print(query_data)
-        #print('[+] totalCount : {}'.format(query_data['totalCount']))
-
         data = query_data["data"]
 
         serial_data = []
@@ -133,8 +124,7 @@ class Sc2API:
             d = data[n]
             s = d["_source"]
             i = s["info_labels"]
-            #print('[*] ID : {}'.format(d['_id']))
-            #print('[*] TITLE : {} {}'.format(i['mediatype'], i['season']))
+
             serial_data.append((d['_id'], i['mediatype'], i['season']))
 
         return serial_data
@@ -289,7 +279,8 @@ class Core:
             print(' ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝     ╚═════╝╚══════╝╚═╝')
 
         print('  STREAM CINEMA 2')
-        print('  Ver. 0x7 dedicated')
+        print('  Ver. 0x8 dedicated\n')
+        print('  Support players [mpv, vlc, mplayer, cvlc] (Windows only VLC)')
         print('')
 
 
@@ -341,7 +332,6 @@ class Core:
             name = None                                             # INPUT
         
         if name == '99':
-            Core.menu()
             return 99, 99
         else:
 
@@ -369,16 +359,16 @@ class Core:
             print('')
             print('  back) Back to Find menu')
             print('')
-            
 
             choose = input(' Choose number: ')                                  # INPUT
+            
             if choose.isnumeric():
                 choose = int(choose)
                 if choose < len(datax):
                     print(datax[choose])
                     idx = datax[choose][3]                                      # get _id
                     nameOfMovie = datax[choose][1] +'-'+ str(datax[choose][2])  # get name
-
+                    print('[+] Loading...')
                     all_data = Sc2API.query_streams(idx)                        # return all data choosed movie
 
                     return nameOfMovie, all_data
@@ -568,36 +558,40 @@ class Core:
             
         
     def link(ws_ident, movie_name, selected_streams_data):
-        #print(ws_ident) datalog
+
         if os.path.exists(KODI_CLI_FILE):
 
             username, password = Core.get_hide()
-            
             video_player = 'vlc'
             webshare = WebshareAPI()
-            login = webshare.login(username, password)
+
+            try:
+                login = webshare.login(username, password)
+            except:
+                login = "FAIL"
+                print('[-] Connection failed! Check webshare site or login for user {}'.format(username))
+
             if login == "OK":
                 print("[+] Login success.")
                 print("    Welcome {}".format(username))
 
                 link = webshare.get_download_link(ws_ident)
-            
+
+                db = {
+                    "name": movie_name,
+                    "link": link,
+                    "ws_id": selected_streams_data[0],
+                    "id": selected_streams_data[1],
+                    "info": selected_streams_data[2],
+                    "info2": selected_streams_data[3]
+                    }
+
+                Core.add_db(db)
+
+                Core.player(link, video_player)
             else:
                 print("[-] Login failed.")
                 link = None
-
-            db = {
-                "name": movie_name,
-                "link": link,
-                "ws_id": selected_streams_data[0],
-                "id": selected_streams_data[1],
-                "info": selected_streams_data[2],
-                "info2": selected_streams_data[3]
-                }
-
-            Core.add_db(db)
-
-            Core.player(link, video_player)
 
         else:
             print('[-] For play set up video player and login in settings menu!')
@@ -610,26 +604,36 @@ class Core:
         print('')
         print(link)
 
-        try:
-            if video_player == 'mpv':
-                print('[+] mpv:')
-                cmd = "mpv -fs --cache-secs=600 " + link
-            elif video_player == 'vlc':
-                print('[+] vlc:')
-                cmd = "vlc --play-and-exit " + link
-            elif video_player == 'mplayer':
-                print('[+] mplayer:')
-                cmd = "mplayer " + link
-            elif video_player == 'cvlc':
-                print('[+] cvlc:')
-                cmd = "cvlc -f --play-and-exit " + link
-            os.system(cmd)
-
-            print('The end!')
+        if os.name == 'nt':
+            try:
+                cmd = "start vlc -f --play-and-exit " + link
+                os.system(cmd)
+                print('The end!')
+            except:
+                print('[-] Dont run video player VLC player!. "Try test in cmd > start vlc" and check VLC player' )
+                print('')
             
-        except:
-            print('[-] Dont run video player vlc or mpv player!')
-            print('')
+        else:
+            try:
+                if video_player == 'mpv':
+                    print('[+] mpv:')
+                    cmd = "mpv -fs --cache-secs=600 " + link
+                elif video_player == 'vlc':
+                    print('[+] vlc:')
+                    cmd = "vlc --play-and-exit " + link
+                elif video_player == 'mplayer':
+                    print('[+] mplayer:')
+                    cmd = "mplayer " + link
+                elif video_player == 'cvlc':
+                    print('[+] cvlc:')
+                    cmd = "cvlc -f --play-and-exit " + link
+                os.system(cmd)
+
+                print('The end!')
+            
+            except:
+                print('[-] Dont run video player {} player!'.format(video_player))
+                print('')
 
     # db zatial json treba migrovat do sqlite ak bude velka
     def add_db(data):
@@ -670,11 +674,12 @@ class Core:
         print('')
 
         try:
-            setting_menu = int(input(' settings > '))        # INPUT
+            setting_menu = int(input(' settings > '))       # INPUT
             if type(setting_menu) == int:
                 if setting_menu == 1:
-                    #Core.set_player()
+                    #Core.set_player()                      # NOVA FUNKCIA ESTE NEEXISTUJE
                     print('[-] Sorry for this version is missing function set_player!')
+                    print('[*] Default player is VLC')
                 elif setting_menu == 2:
                     Core.set_login()
         except ValueError:
@@ -807,7 +812,6 @@ class Core:
             print('\n[-] Failed save shadow login data to {} OK\n'.format(KODI_CLI_FILE))
         
 
-    
 if __name__ == "__main__":
 
     Core.cls()
