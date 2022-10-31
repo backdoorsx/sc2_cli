@@ -667,7 +667,7 @@ class Core:
 
     def settings():
         print('')
-        print('   1) Setting video player')
+        print('   1) Setting video player - only VLC')
         print('   2) Setting webshare login')
         print('')
         print('  99) Back to the Main menu')
