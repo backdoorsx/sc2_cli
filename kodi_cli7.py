@@ -38,13 +38,8 @@ class Sc2API:
         else:
             QUERY_URL_API = "https://plugin.sc2.zone" + tag_type # NEXT/PREV PAGE, defaultne API vracia 100
 
-        # Ex:
-        #QUERY_URL_API = "https://plugin.sc2.zone/api/media/filter/search?sort=score&limit=20&type=%2A&order=desc&value={}&access_token={}".format(search_name, TOKEN)
-        #QUERY_URL_API = "https://plugin.sc2.zone/api/media/filter/v2/search?order=desc&sort=score&type=*&value={}&access_token={}".format(search_name, TOKEN)
-        #QUERY_URL_API = "https://plugin.sc2.zone/api/media/filter/search?order=desc&sort=score&type=*&value={}&access_token={}".format(search_name, TOKEN)
-
-        query_data = requests.get(QUERY_URL_API).json()
         print(QUERY_URL_API)
+        query_data = requests.get(QUERY_URL_API).json()
 
         next_page = None
         prev_page = None
@@ -58,7 +53,6 @@ class Sc2API:
                 if 'prev' in list(next_prev_page.keys()):
                     prev_page = query_data['pagination']['prev']
                     print(prev_page)
-
                     
         page = query_data["totalCount"]
         data = query_data["data"]
@@ -74,6 +68,7 @@ class Sc2API:
                 get_year = i["year"]
             else:
                 get_year = 'NaN'
+                
             try:
                 if len(i2) != 0:
                     if len(i2) == 1:                                                    # iba jeden jazyk
@@ -114,9 +109,10 @@ class Sc2API:
     def query_search_season(idx):
 
         QUERY_URL_API = "https://plugin.sc2.zone/api/media/filter/parent?value={}&sort=episode&access_token={}".format(idx, TOKEN)
+        print(QUERY_URL_API)
         query_data = requests.get(QUERY_URL_API).json()
 
-        data = query_data["data"]
+        data = query_data["data"]      
 
         serial_data = []
         for n in range(len(data)):
@@ -126,6 +122,10 @@ class Sc2API:
             i = s["info_labels"]
 
             serial_data.append((d['_id'], i['mediatype'], i['season']))
+            # ak najde v info_labels > mediatype episode namiesto season tak serial nema serie
+            if i['mediatype'] == 'episode':
+                i['mediatype']
+                return 'episode'
 
         return serial_data
 
@@ -279,7 +279,7 @@ class Core:
             print(' ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝     ╚═════╝╚══════╝╚═╝')
 
         print('  STREAM CINEMA 2')
-        print('  Ver. 0x8 dedicated\n')
+        print('  Ver. 0x9 dedicated\n')
         print('  Support players [mpv, vlc, mplayer, cvlc] (Windows only VLC)')
         print('')
 
@@ -422,16 +422,19 @@ class Core:
 
                         all_data = Sc2API.query_search_season(idx)      # return all data choosed movie
 
-                        for i in range(len(all_data)):
-                            print("+"+76*"-")
-                            print("|  {}  |  {}  |  {}".format(i, all_data[i][1], all_data[i][2]))
+                        if all_data == 'episode':                       # serial nema serie
+                            season = '0'
+                        else:
+                            for i in range(len(all_data)):
+                                print("+"+76*"-")
+                                print("|  {}  |  {}  |  {}".format(i, all_data[i][1], all_data[i][2]))
 
-                        print("+"+76*"-"+"\n")
-                        print('')
-                        print('  99) Back to the Find series menu')
-                        print('')
+                            print("+"+76*"-"+"\n")
+                            print('')
+                            print('  99) Back to the Find series menu')
+                            print('')
                 
-                        season = input('{} | Choose number > '.format(datax[choose][1])) # INPUT
+                            season = input('{} | Choose number > '.format(datax[choose][1])) # INPUT
 
                         if season.isnumeric():
                             season = int(season)
@@ -440,9 +443,12 @@ class Core:
                                 print('')
                                 continue
                             else:
-                                print('\n[DEBUG] {}\n'.format(all_data[season]))
-                                idx = all_data[season][0]
-                        
+                                if all_data == 'episode':               # # serial nema serie
+                                    all_data = [(0,0,1)]
+                                else:
+                                    print('\n[DEBUG] {}\n'.format(all_data[season]))
+                                    idx = all_data[season][0]
+                                    
                                 e_data = Sc2API.query_search_episode(idx)
 
 
