@@ -246,7 +246,7 @@ class Core:
         print('')
 
         
-    def name():
+    def name(ver):
 
         r = random.randint(0,3)
         
@@ -279,7 +279,7 @@ class Core:
             print(' ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝     ╚═════╝╚══════╝╚═╝')
 
         print('  STREAM CINEMA 2')
-        print('  Ver. 0x9 dedicated\n')
+        print('  Ver. 0x{} dedicated\n'.format(ver))
         print('  Support players [mpv, vlc, mplayer, cvlc] (Windows only VLC)')
         print('')
 
@@ -487,14 +487,16 @@ class Core:
                                 print('  99) Back to the Find series menu')
                                 print('')
                                 
-                                episode = input('\n {} | Season{} | Choose number > '.format(datax[choose][1], all_data[season][2])) # INPUT
+                                episode = input('\n {} | Season{} | Choose number [{}-{}] > '.format(datax[choose][1], all_data[season][2],0 ,len(e_data)-1 )) # INPUT
                                     
                                 if episode.isnumeric():
                                     episode = int(episode)
-
+                                    
                                     if episode == 99:
                                         print('')
                                         continue
+                                    elif episode >= len(e_data):
+                                        input('[-] Episode {} is not available!'.format(episode+1))
                                     else:
                                         print('\n[DEBUG] {}\n'.format(e_data[episode]))
                                         nameOfMovie += ' Season{} Episode{}'.format(all_data[season][2], e_data[episode][2])
@@ -822,7 +824,7 @@ if __name__ == "__main__":
 
     Core.cls()
     try:
-        Core.name()
+        Core.name(10)
     except:
         pass
 
@@ -834,6 +836,7 @@ if __name__ == "__main__":
         Core.menu()
         
         menu = input(' sc2 > ')         # INPUT
+        
         if menu.isnumeric():
             if menu == '0':
                 Core.settings()
@@ -841,6 +844,7 @@ if __name__ == "__main__":
             elif menu == '1':
                 while True:
                     movie_name, streams_data = Core.find_movie('movie')
+                    
                     if movie_name == 99 and streams_data == 99:
                             break
                     elif movie_name != None or  streams_data != None:
@@ -848,6 +852,7 @@ if __name__ == "__main__":
                     
             elif menu == '2':
                 movie_name, streams_data = Core.find_movie('new')
+                
                 if movie_name == None and streams_data != None:
                     movie_name, streams_data = Core.find_movie(streams_data)
                 elif movie_name != None or  streams_data != None:
@@ -856,6 +861,7 @@ if __name__ == "__main__":
             elif menu == '3':
                 while True:
                     serial_name, streams_data, all_episode, e = Core.find_serial()
+                    
                     if serial_name == 99 and streams_data == 99:
                         break
                     elif serial_name != None or streams_data != None:
@@ -863,13 +869,17 @@ if __name__ == "__main__":
 
                     for n in range(e+1, len(all_episode)):
                         print('')
-                        #print(all_episode[n][0])
                         print(all_episode[n])
                         serial_name = serial_name[:-1]
                         serial_name = serial_name + str(all_episode[n][2])
                         print('')
-                        #print(serial_name)
+  
+                        if int(all_episode[n][3]) == 0:
+                            print('\n[-] Next episode is not available.\n')
+                            break
+                        
                         nxt = input('Next episode {} ? [Y/N] > '.format(all_episode[n][2]))
+
                         if nxt.upper() in ['', 'YES', 'Y', 'YOP', 'A', 'ANO']:
                             e_idx = all_episode[n][0]
                             _data = Sc2API.query_streams(e_idx)
