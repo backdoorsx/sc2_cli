@@ -15,7 +15,8 @@
    1) Find movies
    2) New releases movies
    3) Find series
-
+   5) History
+   
   99) Exit to KODI CLI stream cinema2
 
  sc2 >
