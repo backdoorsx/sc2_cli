@@ -17,7 +17,7 @@ except ModuleNotFoundError:
     input('Press any key to continue without requred modules.\n Use: pip3 install requests hashlib passlib')
 
 TOKEN = "9ajdu4xyn1ig8nxsodr3"      # access token
-#TOKEN = "th2tdy0no8v1zoh1fs59"      # access token
+TOKEN = "th2tdy0no8v1zoh1fs59"      # access token
 
 VERSION = '22'
 KODI_CLI_FILE = 'kodi_cli.conf'     # config file shadowed
@@ -683,7 +683,7 @@ class Core:
                     cmd = "mplayer " + link
                 elif VIDEO_PLAYER == 'cvlc':
                     print('[+] cvlc:')
-                    cmd = "cvlc -f --play-and-exit " + link
+                    cmd = "cvlc -f --network-caching 10000 --play-and-exit " + link
                 os.system(cmd)
 
                 print('The end!')
